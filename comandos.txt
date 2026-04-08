@@ -1,0 +1,161 @@
+
+ CONFIGURACION DE LOS SWITCHES (SW1_Intranet, SW2_Intranet, SW3_Intranet)
+
+
+1. Basic Config
+enable
+configure terminal
+hostname SW1_Intranet
+enable secret Admin123
+no ip domain-lookup
+service password-encryption
+line con 0
+password Admin123
+login
+line vty 0 4
+password Admin123
+login
+transport input telnet
+exit
+
+2.1. Deshabilitar todos los puertos
+interface range fa0/1-24
+shutdown
+exit
+interface range gi0/1-2
+shutdown
+exit
+
+2.2. Habilitar puertos activos en modo access
+interface fa0/6
+switchport mode access
+no shutdown
+exit
+interface fa0/13
+switchport mode access
+no shutdown
+exit
+
+2.3. Configurar enlaces trunk y VLAN nativa
+interface range fa0/1-5
+switchport mode trunk
+switchport trunk native vlan 99
+no shutdown
+exit
+
+2.4. Crear VLANs
+vlan 30
+name Guest
+exit
+vlan 50
+name Internal
+exit
+vlan 65
+name Staff
+exit
+vlan 99
+name Native
+exit
+
+show vlan brief
+
+2.5. Asignar puertos a VLANs
+interface range fa0/6-12
+switchport mode access
+switchport access vlan 30
+exit
+interface range fa0/13-18
+switchport mode access
+switchport access vlan 50
+exit
+interface range fa0/19-24
+switchport mode access
+switchport access vlan 65
+exit
+
+2.6. Configurar interfaz de administracion (VLAN 99)
+interface vlan 99
+ip address 172.19.9.2 255.255.255.0
+no shutdown
+exit
+ip default-gateway 172.19.9.1
+
+Guardar configuracion
+end
+write memory
+
+
+CONFIGURACION ROUTER (R_SOHO)
+
+
+1. Basic Config
+enable
+configure terminal
+hostname R_SOHO
+enable secret Admin123
+no ip domain-lookup
+service password-encryption
+line con 0
+password Admin123
+login
+line vty 0 4
+password Admin123
+login
+transport input telnet
+exit
+
+2. Configurar subinterfaces (Router-on-a-stick)
+interface fastethernet 0/0
+no shutdown
+exit
+
+interface fastethernet 0/0.30
+encapsulation dot1q 30
+ip address 172.19.0.1 255.255.252.0
+ip helper-address 172.19.8.2
+exit
+
+interface fastethernet 0/0.50
+encapsulation dot1q 50
+ip address 172.19.4.1 255.255.252.0
+ip helper-address 172.19.8.2
+exit
+
+interface fastethernet 0/0.65
+encapsulation dot1q 65
+ip address 172.19.8.1 255.255.255.0
+ip helper-address 172.19.8.2
+exit
+
+interface fastethernet 0/0.99
+encapsulation dot1q 99 native
+ip address 172.19.9.1 255.255.255.0
+ip helper-address 172.19.8.2
+exit
+
+3. Configurar EIGRP
+router eigrp 10
+network 172.19.0.0 0.0.3.255
+network 172.19.4.0 0.0.3.255
+network 172.19.8.0 0.0.0.255
+network 172.19.9.0 0.0.0.255
+network 201.110.2.0 0.0.0.3
+exit
+
+4. Ruta por defecto
+ip route 0.0.0.0 0.0.0.0 201.110.2.2
+
+Guardar configuracion
+end
+write memory
+
+
+
+VERIFICACION
+
+
+show vlan brief
+show interfaces trunk
+show spanning-tree
+show ip route
+show running-config
