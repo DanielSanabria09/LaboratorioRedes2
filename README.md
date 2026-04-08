@@ -67,6 +67,7 @@ La documentación técnica completa del laboratorio se encuentra en la sección 
 
 ## Estructura del Repositorio
 
-- Link Video = ...
+- Link Video = [https://youtu.be/E9AGHkl8Zq8]
 - PacketTracer = Archivo de simulación (.pkt)    
 - Wiki = Documentación técnica completa  
+- Comandos Utilizapd = Archivo de comandos (.txt)
